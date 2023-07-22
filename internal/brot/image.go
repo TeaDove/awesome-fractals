@@ -17,6 +17,7 @@ type BuilderInput struct {
 	Width, Height int
 	MaxIteration  int
 	EscapeRadius  float64
+	Done          chan struct{}
 }
 
 type Input struct {
@@ -36,6 +37,7 @@ func NewInputFromBuilderInput(input *BuilderInput) (*Input, int) {
 		Height:       input.Height,
 		MaxIteration: input.MaxIteration,
 		EscapeRadius: input.EscapeRadius,
+		Done:         input.Done,
 	}
 
 	if input.ColorStep < input.MaxIteration {
@@ -49,7 +51,9 @@ func NewInputFromBuilderInput(input *BuilderInput) (*Input, int) {
 func Render(input *Input) *image.RGBA {
 	ratio := float64(input.Height) / float64(input.Width)
 	xmin, xmax := input.XPos-input.EscapeRadius/2.0, math.Abs(input.XPos+input.EscapeRadius/2.0)
-	ymin, ymax := input.YPos-input.EscapeRadius*ratio/2.0, math.Abs(input.YPos+input.EscapeRadius*ratio/2.0)
+	ymin, ymax := input.YPos-input.EscapeRadius*ratio/2.0, math.Abs(
+		input.YPos+input.EscapeRadius*ratio/2.0,
+	)
 
 	rgbaImageComplied := image.NewRGBA(
 		image.Rectangle{Min: image.Point{}, Max: image.Point{X: input.Width, Y: input.Height}},

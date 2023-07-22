@@ -45,8 +45,12 @@ var (
 		Usage: "ypos end value",
 		Value: 0.78912,
 	}
-	radiusFlag       = &cli.Float64Flag{Name: "radius", Usage: "Escape Radius", Value: .125689}
-	radiusEndFlag    = &cli.Float64Flag{Name: "radius-end", Usage: "radius end value", Value: .125689}
+	radiusFlag    = &cli.Float64Flag{Name: "radius", Usage: "Escape Radius", Value: .125689}
+	radiusEndFlag = &cli.Float64Flag{
+		Name:  "radius-end",
+		Usage: "radius end value",
+		Value: .125689,
+	}
 	iterationFlag    = &cli.IntFlag{Name: "iteration", Value: 800, Usage: "Iteration count"}
 	iterationEndFlag = &cli.IntFlag{Name: "iteration-end", Value: 800, Usage: "iteration end value"}
 	paletteFlag      = &cli.StringFlag{
@@ -69,9 +73,11 @@ var (
 		Value: 3,
 		Usage: "Amount of to generate in video",
 	}
-	fpsFlag = &cli.IntFlag{Name: "fps",
+	fpsFlag = &cli.IntFlag{
+		Name:  "fps",
 		Value: 30,
-		Usage: "Frames per second"}
+		Usage: "Frames per second",
+	}
 
 	maxprocsFlag = &cli.IntFlag{
 		Name:  "maxprocs",
@@ -83,21 +89,24 @@ var (
 func Run() {
 	captureInterrupt()
 
-	app := &cli.App{Flags: []cli.Flag{maxprocsFlag},
-		Commands: []*cli.Command{{
-			Name:   "image",
-			Action: drawImage,
-			Flags: []cli.Flag{
-				imageFilenameFlag,
-				widthFlag,
-				heightFlag,
-				stepFlag,
-				xposFlag,
-				yposFlag,
-				radiusFlag,
-				iterationFlag,
-				paletteFlag,
-			}},
+	app := &cli.App{
+		Flags: []cli.Flag{maxprocsFlag},
+		Commands: []*cli.Command{
+			{
+				Name:   "image",
+				Action: drawImage,
+				Flags: []cli.Flag{
+					imageFilenameFlag,
+					widthFlag,
+					heightFlag,
+					stepFlag,
+					xposFlag,
+					yposFlag,
+					radiusFlag,
+					iterationFlag,
+					paletteFlag,
+				},
+			},
 			{
 				Name:   "video",
 				Action: drawVideo,
@@ -122,10 +131,10 @@ func Run() {
 					videoFilenameFlag,
 				},
 			},
-		}}
+		},
+	}
 
 	err := app.Run(os.Args)
-
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
 	}

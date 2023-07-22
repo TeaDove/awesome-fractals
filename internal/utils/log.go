@@ -13,6 +13,7 @@ func GetType(v interface{}) string {
 		return t.Name()
 	}
 }
+
 func LogInterface(v any) {
 	log.Info().Interface(GetType(v), v).Str("status", "logging.interface").Send()
 }

@@ -51,7 +51,12 @@ func drawVideo(cCtx *cli.Context) error {
 	frames := cCtx.Int(secondsFlag.Name) * cCtx.Int(fpsFlag.Name)
 	input, _ := brot.NewInputFromBuilderInput(&buildInput)
 
-	aw, err := mjpeg.New(cCtx.String(videoFilenameFlag.Name), int32(cCtx.Int(widthFlag.Name)), int32(cCtx.Int(heightFlag.Name)), int32(cCtx.Int(fpsFlag.Name)))
+	aw, err := mjpeg.New(
+		cCtx.String(videoFilenameFlag.Name),
+		int32(cCtx.Int(widthFlag.Name)),
+		int32(cCtx.Int(heightFlag.Name)),
+		int32(cCtx.Int(fpsFlag.Name)),
+	)
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("Error creating video file: %s", err.Error()), 1)
 	}

@@ -21,6 +21,7 @@ func drawImage(cCtx *cli.Context) error {
 		return cli.Exit("Palette not found", 1)
 	}
 
+	done := make(chan struct{})
 	buildInput := brot.BuilderInput{
 		Colors:       colors,
 		ColorStep:    cCtx.Int(stepFlag.Name),
@@ -30,10 +31,10 @@ func drawImage(cCtx *cli.Context) error {
 		Height:       cCtx.Int(heightFlag.Name),
 		MaxIteration: cCtx.Int(iterationFlag.Name),
 		EscapeRadius: cCtx.Float64(radiusFlag.Name),
+		Done:         done,
 	}
 
 	input, iterations := brot.NewInputFromBuilderInput(&buildInput)
-	done := make(chan struct{}, iterations)
 	go func() {
 		bar := progressbar.Default(int64(iterations))
 		for i := 0; i < iterations; i++ {
