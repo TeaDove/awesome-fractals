@@ -6,13 +6,16 @@ import (
 )
 
 func InterpolateColors(colors []Color, colorStep float64) []color.RGBA {
-	var factor float64
-	var steps []float64
-	var cols []uint32
-	var interpolated []uint32
-	var interpolatedColors []color.RGBA
+	var (
+		factor             float64
+		steps              []float64
+		cols               []uint32
+		interpolated       []uint32
+		interpolatedColors []color.RGBA
+	)
 
 	factor = 1.0 / colorStep
+
 	for index, col := range colors {
 		if col.Step == 0.0 && index != 0 {
 			stepRatio := float64(index+1) / float64(len(colors))
@@ -21,6 +24,7 @@ func InterpolateColors(colors []Color, colorStep float64) []color.RGBA {
 		} else {
 			steps = append(steps, col.Step)
 		}
+
 		r, g, b, a := col.Color.RGBA()
 		r /= 0xff
 		g /= 0xff
@@ -30,20 +34,22 @@ func InterpolateColors(colors []Color, colorStep float64) []color.RGBA {
 		cols = append(cols, uintColor)
 	}
 
-	var min, max, minColor, maxColor float64
+	var minStep, maxStep, minColor, maxColor float64
+
 	for i := 0.0; i <= 1; i += factor {
-		for j := 0; j < len(colors)-1; j++ {
+		for j := range len(colors) - 1 {
 			if !(i >= steps[j] && i < steps[j+1]) {
 				continue
 			}
-			min = steps[j]
-			max = steps[j+1]
+
+			minStep = steps[j]
+			maxStep = steps[j+1]
 			minColor = float64(cols[j])
 			maxColor = float64(cols[j+1])
 			uintColor := cosineInterpolation(
 				maxColor,
 				minColor,
-				(i-min)/(max-min),
+				(i-minStep)/(maxStep-minStep),
 			)
 			interpolated = append(interpolated, uint32(uintColor))
 		}

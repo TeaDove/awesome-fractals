@@ -35,22 +35,26 @@ func drawImage(cCtx *cli.Context) error {
 	}
 
 	input, iterations := brot.NewInputFromBuilderInput(&buildInput)
+
 	go func() {
 		bar := progressbar.Default(int64(iterations))
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			<-done
+
 			err := bar.Add(1)
 			if err != nil {
-				log.Error().Err(err).Str("status", "bar.add.error")
+				log.Error().Err(err).Msg("bar.add.error")
 			}
 		}
 	}()
+
 	img := brot.Render(input)
 
 	output, err := os.Create(cCtx.String(imageFilenameFlag.Name))
 	if err != nil {
 		return err
 	}
+
 	err = png.Encode(output, img)
 	if err != nil {
 		return err

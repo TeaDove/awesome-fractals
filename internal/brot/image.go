@@ -1,10 +1,14 @@
 package brot
 
 import (
+	"context"
 	"image"
 	"image/color"
 	"math"
+	"runtime"
 	"sync"
+
+	"golang.org/x/sync/semaphore"
 
 	"github.com/teadove/awesome-fractals/internal/palette"
 )
@@ -43,6 +47,7 @@ func NewInputFromBuilderInput(input *BuilderInput) (*Input, int) {
 	if input.ColorStep < input.MaxIteration {
 		input.ColorStep = input.MaxIteration
 	}
+
 	r.Colors = palette.InterpolateColors(input.Colors, float64(input.ColorStep))
 
 	return &r, r.Height
@@ -59,18 +64,24 @@ func Render(input *Input) *image.RGBA {
 		image.Rectangle{Min: image.Point{}, Max: image.Point{X: input.Width, Y: input.Height}},
 	)
 
-	wg := sync.WaitGroup{}
-	for iy := 0; iy < input.Height; iy++ {
-		wg.Add(1)
-		go func(iy int) {
-			defer wg.Done()
+	var (
+		weighted = semaphore.NewWeighted(int64(runtime.GOMAXPROCS(0) + 2))
+		wg       sync.WaitGroup
+	)
+
+	for iy := range input.Height {
+		_ = weighted.Acquire(context.Background(), 1)
+
+		wg.Go(func() {
+			defer weighted.Release(1)
+
 			defer func() {
 				if input.Done != nil {
 					input.Done <- struct{}{}
 				}
 			}()
 
-			for ix := 0; ix < input.Width; ix++ {
+			for ix := range input.Width {
 				x := xmin + (xmax-xmin)*float64(ix)/float64(input.Width-1)
 				y := ymin + (ymax-ymin)*float64(iy)/float64(input.Width-1)
 				norm, it := mandelIteration(x, y, input.MaxIteration)
@@ -79,6 +90,7 @@ func Render(input *Input) *image.RGBA {
 				if int(math.Abs(iteration)) >= len(input.Colors)-1 {
 					continue
 				}
+
 				color1 := input.Colors[int(math.Abs(iteration))]
 				color2 := input.Colors[int(math.Abs(iteration))+1]
 				compiledColor := linearInterpolation(
@@ -89,10 +101,11 @@ func Render(input *Input) *image.RGBA {
 
 				rgbaImageComplied.Set(ix, iy, uint32ToRgba(compiledColor))
 			}
-		}(iy)
+		})
 	}
 
 	wg.Wait()
+
 	return rgbaImageComplied
 }
 
@@ -101,20 +114,23 @@ func linearInterpolation(c1, c2, mu uint32) uint32 {
 }
 
 func mandelIteration(cx, cy float64, maxIter int) (float64, int) {
-	x, y, xx, yy := 0.0, 0.0, 0.0, 0.0
+	var x, y, xx, yy float64
 
-	for i := 0; i < maxIter; i++ {
+	for i := range maxIter {
 		xy := x * y
 		xx = x * x
+
 		yy = y * y
 		if xx+yy > 4 {
 			return xx + yy, i
 		}
+
 		x = xx - yy + cx
 		y = 2*xy + cy
 	}
 
 	logZn := (x*x + y*y) / 2
+
 	return logZn, maxIter
 }
 
@@ -124,6 +140,7 @@ func rgbaToUint(color color.RGBA) uint32 {
 	g /= 0xff
 	b /= 0xff
 	a /= 0xff
+
 	return r<<24 | g<<16 | b<<8 | a
 }
 
@@ -132,5 +149,6 @@ func uint32ToRgba(col uint32) color.RGBA {
 	g := col >> 16 & 0xff
 	b := col >> 8 & 0xff
 	a := 0xff
+
 	return color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
 }

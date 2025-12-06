@@ -70,8 +70,9 @@ func drawVideo(cCtx *cli.Context) error {
 		Float64("ypos_step", yposStep).
 		Float64("escape_radius_step", escapeRadiusStep).
 		Int("max_iteration_step", maxIterationStep).Send()
+
 	bar := progressbar.Default(int64(frames))
-	for i := 0; i < frames; i++ {
+	for range frames {
 		input.XPos += xposStep
 		input.YPos += yposStep
 		input.EscapeRadius += escapeRadiusStep
@@ -80,10 +81,12 @@ func drawVideo(cCtx *cli.Context) error {
 		img := brot.Render(input)
 
 		buf := &bytes.Buffer{}
+
 		err = jpeg.Encode(buf, img, nil)
 		if err != nil {
 			return cli.Exit(fmt.Sprintf("Error encoding jpeg: %s", err.Error()), 1)
 		}
+
 		err = aw.AddFrame(buf.Bytes())
 		if err != nil {
 			return cli.Exit(fmt.Sprintf("Error adding frame: %s", err.Error()), 1)
@@ -91,12 +94,14 @@ func drawVideo(cCtx *cli.Context) error {
 
 		err := bar.Add(1)
 		if err != nil {
-			log.Error().Err(err).Str("status", "bar.add.error")
+			log.Error().Err(err).Msg("bar.add.error")
 		}
 	}
+
 	err = aw.Close()
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("Error closing video file: %s", err.Error()), 1)
 	}
+
 	return nil
 }

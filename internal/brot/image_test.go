@@ -13,6 +13,8 @@ import (
 )
 
 func TestUnit_Brot_Render_Ok(t *testing.T) {
+	t.Parallel()
+
 	file, err := os.ReadFile("test_image.png")
 	utils.Check(err)
 
