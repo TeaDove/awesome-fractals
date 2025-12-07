@@ -14,6 +14,9 @@ test:
 run:
 	@$(GO) run main.go
 
+run-image:
+	@$(GO) run main.go image --xpos -0.00575 --radius 0.00125689
+
 build:
 	@$(GO) build -o $(BUILD_OUTPUT) main.go
 
