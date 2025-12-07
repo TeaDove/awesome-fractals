@@ -84,6 +84,7 @@ func Render(input *Input) *image.RGBA {
 			for ix := range input.Width {
 				x := xmin + (xmax-xmin)*float64(ix)/float64(input.Width-1)
 				y := ymin + (ymax-ymin)*float64(iy)/float64(input.Width-1)
+
 				norm, it := mandelIteration(x, y, input.MaxIteration)
 				iteration := float64(input.MaxIteration-it) + math.Log(norm)
 
@@ -93,6 +94,7 @@ func Render(input *Input) *image.RGBA {
 
 				color1 := input.Colors[int(math.Abs(iteration))]
 				color2 := input.Colors[int(math.Abs(iteration))+1]
+
 				compiledColor := linearInterpolation(
 					rgbaToUint(color1),
 					rgbaToUint(color2),
