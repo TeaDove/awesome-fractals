@@ -21,8 +21,8 @@ USAGE:
    main [global options] command [command options] [arguments...]
 
 COMMANDS:
-   image    
-   video    
+   image
+   video
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
